@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bedrock Launcher</title>
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600&family=Silkscreen&display=swap" rel="stylesheet">
+<style>
+:root{--accent:#3c8527;--accent-hi:#52a535;--accent-lo:#1d4d12;--bg1:#313233;--bg2:#1e1e1f;--panel:#48494a;--panel-lo:#2b2b2c;--text:#fff;--mute:#b1b2b5;--r:0px;--scale:1;--font:'Pixelify Sans',ui-monospace,monospace;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg2);color:var(--text);font-family:var(--font);font-size:calc(16px*var(--scale));overflow:hidden}
+#pano{position:fixed;inset:0;z-index:0;background:
+ linear-gradient(180deg,rgba(0,0,0,.35),rgba(0,0,0,.75)),
+ repeating-linear-gradient(90deg,var(--accent-lo) 0 48px,var(--accent) 48px 96px,#2d6a1e 96px 144px);
+ background-size:100% 100%,288px 100%;animation:pan 40s linear infinite}
+body.nopano #pano{animation:none}
+@keyframes pan{to{background-position:0 0,-288px 0}}
+@media(prefers-reduced-motion:reduce){#pano{animation:none}}
+#app{position:relative;z-index:1;display:flex;height:100%;max-width:1100px;margin:0 auto}
+nav{width:200px;background:var(--bg2);border-right:4px solid #000;display:flex;flex-direction:column;padding:12px;gap:8px;flex-shrink:0}
+.logo{font-family:'Silkscreen',var(--font);font-size:1.1em;padding:8px 4px 14px;line-height:1.1}
+.logo small{display:block;color:var(--mute);font-size:.6em;margin-top:4px}
+.tab{all:unset;cursor:pointer;padding:10px 12px;border-radius:var(--r);color:var(--mute);border:2px solid transparent}
+.tab:hover{background:var(--panel-lo);color:var(--text)}
+.tab[aria-selected=true]{background:var(--panel);color:var(--text);border-color:#000;box-shadow:inset 0 -3px 0 rgba(0,0,0,.35),inset 0 3px 0 rgba(255,255,255,.18)}
+.tab:focus-visible,.btn:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.who{margin-top:auto;font-size:.85em;color:var(--mute);padding:6px}
+main{flex:1;overflow:auto;padding:20px;background:linear-gradient(var(--bg1),var(--bg2));min-width:0}
+h2{font-family:'Silkscreen',var(--font);font-weight:400;font-size:1.2em;margin:0 0 14px}
+.card{background:var(--panel);border:2px solid #000;border-radius:var(--r);padding:14px;margin-bottom:14px;box-shadow:inset 0 3px 0 rgba(255,255,255,.18),inset 0 -3px 0 rgba(0,0,0,.35)}
+.card h3{margin:0 0 6px;font-weight:600}
+.mute{color:var(--mute)}
+.btn{all:unset;box-sizing:border-box;cursor:pointer;text-align:center;padding:10px 18px;border:2px solid #000;border-radius:var(--r);background:#6d6e70;color:#fff;box-shadow:inset 0 3px 0 rgba(255,255,255,.3),inset 0 -4px 0 rgba(0,0,0,.4)}
+.btn:hover{background:#7f8083}
+.btn:active{box-shadow:inset 0 4px 0 rgba(0,0,0,.4)}
+.btn.go{background:var(--accent);font-size:1.4em;padding:14px 40px;font-weight:600}
+.btn.go:hover{background:var(--accent-hi)}
+.btn[disabled]{opacity:.6;pointer-events:none}
+.hero{display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between}
+select,input[type=text]{font:inherit;color:#fff;background:#1e1e1f;border:2px solid #000;border-radius:var(--r);padding:8px 10px;box-shadow:inset 0 3px 0 rgba(0,0,0,.5);max-width:100%}
+.bar{height:16px;background:#1e1e1f;border:2px solid #000;border-radius:var(--r);margin-top:12px;overflow:hidden;display:none}
+.bar i{display:block;height:100%;width:0;background:var(--accent-hi)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:2px solid rgba(0,0,0,.35)}
+.row:last-child{border:0}
+.sw{display:flex;gap:6px;flex-wrap:wrap}
+.sw button{all:unset;cursor:pointer;width:30px;height:30px;border:2px solid #000;border-radius:var(--r)}
+.sw button[aria-pressed=true]{outline:3px solid #fff}
+.tog{all:unset;cursor:pointer;width:52px;height:26px;background:#1e1e1f;border:2px solid #000;border-radius:var(--r);position:relative}
+.tog::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;background:#999;border-radius:var(--r);transition:.15s}
+.tog[aria-checked=true]{background:var(--accent)}
+.tog[aria-checked=true]::after{left:28px;background:#fff}
+.tag{font-size:.75em;padding:2px 8px;background:#000;border-radius:var(--r);margin-left:6px}
+section[hidden]{display:none}
+@media(max-width:640px){#app{flex-direction:column}nav{width:100%;flex-direction:row;overflow-x:auto;border-right:0;border-bottom:4px solid #000;align-items:center}.logo,.who{display:none}}
+</style>
+</head>
+<body>
+<div id="pano"></div>
+<div id="app">
+<nav role="tablist" aria-label="Launcher">
+ <div class="logo">BEDROCK<small>Launcher</small></div>
+ <button class="tab" role="tab" data-t="play" aria-selected="true">Play</button>
+ <button class="tab" role="tab" data-t="inst" aria-selected="false">Installations</button>
+ <button class="tab" role="tab" data-t="mods" aria-selected="false">Mods</button>
+ <button class="tab" role="tab" data-t="news" aria-selected="false">News</button>
+ <button class="tab" role="tab" data-t="cust" aria-selected="false">Customize</button>
+ <div class="who" id="who"></div>
+</nav>
+<main>
+ <section id="play">
+  <h2>Ready to play</h2>
+  <div class="card hero">
+   <div><h3 id="curName"></h3><div class="mute" id="curSub"></div>
+    <div class="bar" id="bar"><i></i></div></div>
+   <button class="btn go" id="go">Play</button>
+  </div>
+  <div class="card"><h3>Launch note</h3><div class="mute" id="note">Press Play to start the selected installation.</div></div>
+ </section>
+
+ <section id="inst" hidden>
+  <h2>Installations</h2>
+  <div class="grid" id="list"></div>
+  <div class="card" style="margin-top:14px"><h3>Add installation</h3>
+   <div class="row"><input type="text" id="nn" placeholder="Name" maxlength="24" aria-label="Installation name">
+   <select id="nv" aria-label="Version"><option>1.21.50</option><option>1.21.40</option><option>1.20.80</option><option>1.21.60 Preview</option></select>
+   <button class="btn" id="add">Add</button></div></div>
+ </section>
+
+ <section id="mods" hidden>
+  <h2>Mods</h2>
+  <div class="card"><div id="dlls"></div>
+  <div class="row"><span class="mute">Enabled DLLs are injected when you press Play. Use official downloads only.</span><button class="btn" id="addDll">Add DLL</button></div></div>
+ </section>
+
+ <section id="news" hidden>
+  <h2>News</h2>
+  <div class="grid">
+   <div class="card"><h3>Tiny Takeover</h3><div class="mute">New Bedrock features arrive in the next drop. Test them early in Preview.</div></div>
+   <div class="card"><h3>Marketplace picks</h3><div class="mute">Fresh maps, skins and texture packs added this week.</div></div>
+   <div class="card"><h3>Realms update</h3><div class="mute">Realm owners can now manage backups from the launcher.</div></div>
+  </div>
+  <div class="mute">Sample content: replace it with your own feed.</div>
+ </section>
+
+ <section id="cust" hidden>
+  <h2>Customize</h2>
+  <div class="card">
+   <div class="row"><span>Player name</span><input type="text" id="user" maxlength="16" aria-label="Player name"></div>
+   <div class="row"><span>Accent color</span><div class="sw" id="acc"></div></div>
+   <div class="row"><span>Background</span><select id="bg"><option value="stone">Stone</option><option value="dirt">Dirt</option><option value="deep">Deep dark</option><option value="nether">Nether</option></select></div>
+   <div class="row"><span>Corners</span><select id="cr"><option value="0px">Square (Ore UI)</option><option value="6px">Soft</option><option value="14px">Round</option></select></div>
+   <div class="row"><span>Font</span><select id="fo"><option value="'Pixelify Sans',ui-monospace,monospace">Pixel</option><option value="'Silkscreen',ui-monospace,monospace">Silkscreen</option><option value="system-ui,sans-serif">Clean sans</option></select></div>
+   <div class="row"><span>UI size</span><input type="range" id="sc" min="0.85" max="1.3" step="0.05" aria-label="UI size"></div>
+   <div class="row"><span>Moving panorama</span><button class="tog" id="pt" role="switch" aria-checked="true" aria-label="Moving panorama"></button></div>
+   <div class="row"><span class="mute">Settings save in this browser.</span><button class="btn" id="reset">Reset</button></div>
+  </div>
+ </section>
+</main>
+</div>
+<script>
+const DEF={user:'Steve',acc:'#3c8527',bg:'stone',cr:'0px',fo:"'Pixelify Sans',ui-monospace,monospace",sc:1,pano:true,sel:0,
+ inst:[{n:'Latest release',v:'1.21.50',t:'Release'},{n:'Preview',v:'1.21.60 Preview',t:'Preview'},{n:'Old favourite',v:'1.20.80',t:'Release'}]};
+const BG={stone:['#313233','#1e1e1f','#48494a','#2b2b2c'],dirt:['#4a3523','#2a1d12','#6b4a30','#3b2819'],deep:['#0e2a33','#04141a','#17414f','#0a2229'],nether:['#4a1f22','#240c0e','#6e2d31','#3a1416']};
+const ACC=['#3c8527','#2f7fd1','#c4472b','#b8860b','#8a4fd1','#d1478f'];
+let S;try{S=Object.assign({},DEF,JSON.parse(localStorage.getItem('bl')||'{}'))}catch(e){S={...DEF}}
+const $=i=>document.getElementById(i);
+const save=()=>{try{localStorage.setItem('bl',JSON.stringify(S))}catch(e){}};
+function shade(h,a){const n=parseInt(h.slice(1),16);const f=c=>Math.max(0,Math.min(255,c+a));return'#'+[(n>>16)&255,(n>>8)&255,n&255].map(f).map(x=>x.toString(16).padStart(2,'0')).join('')}
+function apply(){const r=document.documentElement.style,b=BG[S.bg]||BG.stone;
+ r.setProperty('--accent',S.acc);r.setProperty('--accent-hi',shade(S.acc,28));r.setProperty('--accent-lo',shade(S.acc,-50));
+ r.setProperty('--bg1',b[0]);r.setProperty('--bg2',b[1]);r.setProperty('--panel',b[2]);r.setProperty('--panel-lo',b[3]);
+ r.setProperty('--r',S.cr);r.setProperty('--font',S.fo);r.setProperty('--scale',S.sc);
+ document.body.classList.toggle('nopano',!S.pano);
+ $('pt').setAttribute('aria-checked',S.pano);$('who').textContent='Signed in as '+S.user;
+ document.querySelectorAll('#acc button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.c===S.acc));
+ const c=S.inst[S.sel]||S.inst[0];$('curName').textContent=c.n;$('curSub').textContent='Minecraft Bedrock '+c.v}
+function renderList(){$('list').innerHTML='';S.inst.forEach((x,i)=>{const d=document.createElement('div');d.className='card';
+ d.innerHTML='<h3></h3><div class="mute"></div><div style="display:flex;gap:8px;margin-top:10px"></div>';
+ d.querySelector('h3').textContent=x.n;d.querySelector('.mute').textContent=x.v;
+ if(i===S.sel){const t=document.createElement('span');t.className='tag';t.textContent='Selected';d.querySelector('h3').append(t)}
+ const row=d.lastChild;const a=document.createElement('button');a.className='btn';a.textContent='Select';a.onclick=()=>{S.sel=i;save();apply();renderList()};
+ const z=document.createElement('button');z.className='btn';z.textContent='Remove';z.onclick=()=>{if(S.inst.length>1){S.inst.splice(i,1);S.sel=0;save();apply();renderList()}};
+ row.append(a,z);$('list').append(d)})}
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.setAttribute('aria-selected',x===t));
+ ['play','inst','mods','news','cust'].forEach(s=>$(s).hidden=s!==t.dataset.t)});
+ACC.forEach(c=>{const b=document.createElement('button');b.style.background=c;b.dataset.c=c;b.setAttribute('aria-label','Accent '+c);b.onclick=()=>{S.acc=c;save();apply()};$('acc').append(b)});
+$('user').value=S.user;$('user').oninput=e=>{S.user=e.target.value||'Steve';save();apply()};
+[['bg','bg'],['cr','cr'],['fo','fo']].forEach(([i,k])=>{$(i).value=S[k];$(i).onchange=e=>{S[k]=e.target.value;save();apply()}});
+$('sc').value=S.sc;$('sc').oninput=e=>{S.sc=+e.target.value;save();apply()};
+$('pt').onclick=()=>{S.pano=!S.pano;save();apply()};
+$('reset').onclick=()=>{S={...DEF,inst:DEF.inst.map(x=>({...x}))};save();location.reload()};
+$('add').onclick=()=>{const n=$('nn').value.trim();if(!n)return;S.inst.push({n,v:$('nv').value,t:'Custom'});$('nn').value='';save();renderList()};
+$('go').onclick=()=>{const b=$('go'),bar=$('bar'),f=bar.firstChild;b.disabled=true;bar.style.display='block';let p=0;
+ $('note').textContent='Preparing '+S.inst[S.sel].n+'...';
+ const iv=setInterval(()=>{p+=7;f.style.width=Math.min(p,100)+'%';if(p>=100){clearInterval(iv);
+  try{window.open('minecraft://','_blank')}catch(e){}
+  $('note').textContent='Launch request sent. If Minecraft did not open, install Bedrock and run this page from your own machine.';
+  b.disabled=false;bar.style.display='none';f.style.width=0}},120)};
+apply();renderList();
+const host=window.chrome&&window.chrome.webview;
+if(host){
+ const send=m=>host.postMessage(m);
+ const drawDlls=list=>{const el=$('dlls');el.innerHTML='';
+  if(!list.length){el.innerHTML='<div class="mute row">No DLLs added yet.</div>';return}
+  list.forEach((d,i)=>{const r=document.createElement('div');r.className='row';
+   const n=document.createElement('span');n.textContent=d.name;
+   const c=document.createElement('div');c.style.cssText='display:flex;gap:8px;align-items:center';
+   const t=document.createElement('button');t.className='tog';t.setAttribute('role','switch');t.setAttribute('aria-checked',d.enabled);t.setAttribute('aria-label','Inject '+d.name);t.onclick=()=>send({type:'toggle',i});
+   const x=document.createElement('button');x.className='btn';x.textContent='Remove';x.onclick=()=>send({type:'remove',i});
+   c.append(t,x);r.append(n,c);el.append(r)})};
+ host.addEventListener('message',e=>{const m=e.data;
+  if(m.type==='dlls')drawDlls(m.list);
+  if(m.type==='status'){$('note').textContent=m.text;if(m.done){$('go').disabled=false;$('bar').style.display='none'}}});
+ $('addDll').onclick=()=>send({type:'add'});
+ $('go').onclick=()=>{$('go').disabled=true;$('note').textContent='Starting...';send({type:'launch'})};
+ send({type:'ready'});
+}else{$('dlls').innerHTML='<div class="mute row">DLL injection works only in the desktop app.</div>';$('addDll').disabled=true}
+</script>
+</body>
+</html>
